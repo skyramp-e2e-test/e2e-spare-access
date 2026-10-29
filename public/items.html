@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Items - E2E Web App</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <nav>
+    <a href="/" data-testid="nav-home">Home</a>
+    <a href="/login" data-testid="nav-login">Login</a>
+    <a href="/items" data-testid="nav-items">Items</a>
+    <form method="post" action="/logout"><button type="submit" data-testid="logout-button">Sign out</button></form>
+  </nav>
+  <h1>Items</h1>
+  <p id="user-status" data-testid="user-status"></p>
+  <form id="add-item-form" data-testid="add-item-form">
+    <label for="item-name">New item</label>
+    <input id="item-name" name="name" required data-testid="item-name-input">
+    <button type="submit" data-testid="add-item-submit">Add item</button>
+  </form>
+  <p id="item-error" class="error" data-testid="item-error" hidden></p>
+  <ul id="items-list" data-testid="items-list"></ul>
+  <script>
+    const list = document.getElementById('items-list');
+    const errorEl = document.getElementById('item-error');
+
+    async function loadItems() {
+      const items = await (await fetch('/api/items')).json();
+      list.replaceChildren(...items.map((item) => {
+        const li = document.createElement('li');
+        li.textContent = item.name;
+        li.dataset.testid = 'item';
+        return li;
+      }));
+    }
+
+    document.getElementById('add-item-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const input = document.getElementById('item-name');
+      const res = await fetch('/api/items', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: input.value }),
+      });
+      if (!res.ok) {
+        errorEl.textContent = (await res.json()).error || 'Could not add item';
+        errorEl.hidden = false;
+        return;
+      }
+      errorEl.hidden = true;
+      input.value = '';
+      await loadItems();
+    });
+
+    fetch('/api/me').then(async (res) => {
+      document.getElementById('user-status').textContent =
+        res.ok ? `Signed in as ${(await res.json()).email}` : 'You are not signed in.';
+    });
+    loadItems();
+  </script>
+</body>
+</html>
