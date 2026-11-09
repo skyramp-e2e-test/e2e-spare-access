@@ -1,6 +1,6 @@
 # e2e-web-app
 
-A small Node.js (Express) + PostgreSQL web app used as a target for end-to-end testing.(Retest SKYR-5391)
+A small Node.js (Express) + PostgreSQL web app used as a target for end-to-end testing.(SKYR-5394 test)
 
 ## What's inside
 
